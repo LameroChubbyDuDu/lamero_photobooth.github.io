@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黑白相機 App 測試</title>
+    <style>
+        body {
+            text-align: center;
+            /* font-family: sans-serif; */
+            font-family: "Vast Shadow", serif;
+            /*background: #416b9c;*/
+            background-image: url("img/bg_4.jpg");
+            background-repeat: none;
+            background-position: center;
+            /* background-size:100%; */
+            color: white;
+            font-size: medium;
+        }
+
+        video {
+            display: none;
+        }
+
+        /* 隱藏原始視訊 */
+        canvas {
+            width: 100%;
+            max-width: 350px;
+            border: 10px solid #381705;
+            background-color: rgb(255, 235, 228);
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 50%;
+            
+            font-family: "Vast Shadow", serif;
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap');
+    </style>
+
+    <h2>Photobooth</h2>
+
+    <video id="video" autoplay playsinline muted></video>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="controls">
+        <button id="startBtn">start</button>
+        <button id="stopBtn">||</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const pcanvas = document.createElement('canvas');
+        pcanvas.width = 32;
+        pcanvas.height = 32;
+        const canvas = document.getElementById('canvas');
+        const pctx = pcanvas.getContext('2d', { willReadFrequently: true });
+        const dctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        var stream;
+        var isStreaming = false;
+
+        startBtn.onclick = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" },
+                    audio: false
+                });
+                video.srcObject = stream;
+                startBtn.style.display = 'none';
+                isStreaming = true;
+
+                video.onloadedmetadata = () => {
+                    console.log("影片尺寸已獲取:", video.videoWidth, video.videoHeight);
+
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+
+                    // ensure that the video is playing
+                    video.play();
+
+                    requestAnimationFrame(draw);
+                };
+                dctx.imageSmoothingEnabled = false;
+            } catch (err) {
+                alert("無法開啟相機: " + err);
+            }
+        };
+
+        stopBtn.onclick = async() => {
+            try{
+                isStreaming = false;
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+                pctx.clearRect(0, 0, 32, 32);
+                dctx.clearRect(0, 0, 640, 640);
+                startBtn.style.display = '';
+            } catch (err){
+                alert("cannot stop the camera" + err);
+            }
+        }
+        function draw() {
+            if(isStreaming == false) return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                pctx.drawImage(video, 0, 0, 32, 32);
+
+                let imageData = pctx.getImageData(0, 0, 32, 32);
+                let data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i+1] = 150;
+                    data[i+2] = 255;
+                    data[i+3] = 255;
+                }
+
+                pctx.putImageData(imageData, 0, 0);
+                dctx.drawImage(pcanvas, 0, 0, 640, 640);
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+    </script>
+</body>
+
+</html>
