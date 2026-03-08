@@ -24,10 +24,11 @@
         }
 
         canvas {
-            width: 100%;
-            max-width: 350px;
+            width: 640px;
+            height: 640px;
             border: 10px solid #381705;
-            background-color: rgb(255, 235, 228);
+            /* background-color: rgb(255, 235, 228); */
+            background-image: url("img/canva_gorilla.jpg");
         }
 
         .controls {
@@ -58,6 +59,7 @@
     <div class="controls">
         <button id="startBtn">start</button>
         <button id="stopBtn">||</button>
+        <button id="downloadBtn" style="display:none">download</button>
     </div>
 
     <script>
@@ -75,7 +77,7 @@
         startBtn.onclick = async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user" },
+                    video: { facingMode: "user", width:640, height:640 },
                     audio: false
                 });
                 video.srcObject = stream;
@@ -90,10 +92,11 @@
 
                     // ensure that the video is playing
                     video.play();
-
+                    downloadBtn.style.display= '';
                     requestAnimationFrame(draw);
                 };
                 dctx.imageSmoothingEnabled = false;
+                
             } catch (err) {
                 alert("無法開啟相機: " + err);
             }
@@ -121,9 +124,29 @@
                 let data = imageData.data;
 
                 for (let i = 0; i < data.length; i += 4) {
-                    data[i+1] = 150;
-                    data[i+2] = 255;
-                    data[i+3] = 255;
+                    let r = data[i];
+                    let g = data[i+1];
+                    let b = data[i+2];
+                    if(r >= b && r >= g){
+                        r = Math.min(r*1.2, 180);
+                        g = Math.max(g*0.4, 0);
+                        b = Math.max(b*0.6, 20);
+                    }else if(g >= r && g >= b){
+                        r = Math.max(r*0.6, 50);
+                        g = Math.min(g*0.8, 180);
+                        b = Math.max(b*0.6, 20);
+                    }else if(b >= r && b >= g){
+                        r = Math.max(r*0.4, 0);
+                        g = Math.max(g*0.4, 0);
+                        b = Math.min(b*1.2, 180);
+                    }else{
+                        r = Math.min(r*1.2, 180);
+                        g = Math.min(g*0.8, 180);
+                        b = Math.min(b*1.2, 180);
+                    }
+                    data[i] = r;
+                    data[i+1] = g;
+                    data[i+2] = b;
                 }
 
                 pctx.putImageData(imageData, 0, 0);
