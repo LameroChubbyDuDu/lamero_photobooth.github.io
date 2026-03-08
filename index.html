@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>黑白相機 App 測試</title>
+    <title>lamero_photobooth</title>
     <style>
         body {
             text-align: center;
@@ -23,7 +23,6 @@
             display: none;
         }
 
-        /* 隱藏原始視訊 */
         canvas {
             width: 100%;
             max-width: 350px;
@@ -64,8 +63,8 @@
     <script>
         const video = document.getElementById('video');
         const pcanvas = document.createElement('canvas');
-        pcanvas.width = 32;
-        pcanvas.height = 32;
+        pcanvas.width = 128;
+        pcanvas.height = 128;
         const canvas = document.getElementById('canvas');
         const pctx = pcanvas.getContext('2d', { willReadFrequently: true });
         const dctx = canvas.getContext('2d');
@@ -76,7 +75,7 @@
         startBtn.onclick = async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" },
+                    video: { facingMode: "user" },
                     audio: false
                 });
                 video.srcObject = stream;
@@ -106,8 +105,8 @@
                 const tracks = stream.getTracks();
                 tracks.forEach(track => track.stop());
                 video.srcObject = null;
-                pctx.clearRect(0, 0, 32, 32);
-                dctx.clearRect(0, 0, 640, 640);
+                pctx.clearRect(0, 0, pcanvas.height, pcanvas.width);
+                dctx.clearRect(0, 0, canvas.height, canvas.width);
                 startBtn.style.display = '';
             } catch (err){
                 alert("cannot stop the camera" + err);
@@ -116,9 +115,9 @@
         function draw() {
             if(isStreaming == false) return;
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                pctx.drawImage(video, 0, 0, 32, 32);
+                pctx.drawImage(video, 0, 0, pcanvas.height, pcanvas.width);
 
-                let imageData = pctx.getImageData(0, 0, 32, 32);
+                let imageData = pctx.getImageData(0, 0, pcanvas.height, pcanvas.width);
                 let data = imageData.data;
 
                 for (let i = 0; i < data.length; i += 4) {
@@ -128,7 +127,7 @@
                 }
 
                 pctx.putImageData(imageData, 0, 0);
-                dctx.drawImage(pcanvas, 0, 0, 640, 640);
+                dctx.drawImage(pcanvas, 0, 0, canvas.height, canvas.width);
             }
 
             requestAnimationFrame(draw);
