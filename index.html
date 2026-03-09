@@ -251,8 +251,9 @@
 
         increBtn.onclick = async () => {
             let getCanvasVal = Number(inputPx.value);
+            getCanvasVal += 32;
             if (getCanvasVal < 128) {
-                getCanvasVal += 32;
+                
                 inputPx.value = getCanvasVal;
                 exceed.style.display = "none";
 
@@ -264,11 +265,12 @@
 
         decreBtn.onclick = async () => {
             let getCanvasVal = Number(inputPx.value);
+            getCanvasVal -= 32;
             if (getCanvasVal <= 32) {
                 exceed.style.display = '';
+                
             }
             else {
-                getCanvasVal -= 32;
                 inputPx.value = getCanvasVal;
                 exceed.style.display = "none";
             }
