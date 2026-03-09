@@ -34,6 +34,14 @@
             background-size: contain;
         }
 
+        @media(min-width: 1200px) {
+            canvas {
+                width: 30vw;
+                height: 30vw;
+            }
+        }
+
+
         .controls {
             margin-top: 20px;
         }
@@ -42,12 +50,94 @@
             padding: 10px 20px;
             font-size: 16px;
             border-radius: 50%;
-            
+
             font-family: "Vast Shadow", serif;
         }
 
-        .dBtn{
-            display:none;
+        p {
+            font-family: "Vast Shadow", serif;
+            color: rgb(255, 148, 187);
+            background-color: rgb(99, 23, 23);
+            width: 300px;
+            height: auto;
+            text-align: center;
+            position: relative;
+            padding: 8px;
+            margin: 10px auto;
+            transform: none; /*往左移動自身長度的一半*/
+            font-family: "Vast Shadow", serif;
+        }
+
+        .inputPx {
+            width: 70px;
+            height: 45px;
+            border-radius: 15%;
+            background-color: rgb(255, 255, 255);
+            color: rgb(251, 100, 135);
+            text-align: center;
+            margin-left: 10px;
+            margin-right: 10px;
+            font-family: "Vast Shadow", serif;
+            font-size: 25px;
+        }
+
+        /* .inputPx2 {
+            -webkit-appearance: none;
+            appearance: none; 
+            background: transparent;
+        }
+
+
+        .inputPx2::-webkit-slider-runnable-track{
+            height: 20px;
+            background-color: #381705;
+            border-radius: 10px;
+        }
+
+        .inputPx2::-webkit-slider-thumb{
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            background: #ff1070;
+            border-radius: 50%;
+            
+        } */
+
+        .incre{
+            display: block;
+            font-size: 30px;
+            background-color: #ffffff;
+            color: #381705;
+        }
+
+        .decre {
+            display: block;
+            font-size: 30px;
+            background-color: #ffffff;
+            color: rgb(0, 0, 0);
+        }
+
+        .pxController {
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            margin: 15px;
+            gap: 10px;
+        }
+
+        .inputWrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dBtn {
+            background-color: rgb(255, 148, 187);
+            color: rgb(99, 23, 23);
+        }
+
+        .dBtn:hover {
+            background-color: rgb(250, 168, 15);
+            color: rgb(228, 37, 97);
         }
     </style>
 </head>
@@ -65,21 +155,34 @@
 
     <div class="controls">
         <button id="startBtn">start</button>
+        <p id="exceed" style="display:none">The number should range from 32 to 128</p>
+        <div class="pxController">
+            <button id="decreasePx" style="display:none" class="decre">-</button></br>
+            <div class="inputWrap">
+                <input id="inputPx" type="number" value=32 style="display:none" class="inputPx" readonly />
+                <!-- <input id="inputPx2" type="range" min=32 max=128 step=32 value=32 class="inputPx2"/> -->
+            </div>
+            <button id="increasePx" style="display:none" class="incre">+</button>
+        </div>
         <button id="stopBtn" style="display:none">||</button>
-        <button id="downloadBtn" style="display:none">download</button>
+        <button id="downloadBtn" style="display:none" class="dBtn">download</button>
         <a id="getImgURL" style="display:none" href=""></a>
     </div>
 
     <script>
         const video = document.getElementById('video');
         const pcanvas = document.createElement('canvas');
-        pcanvas.width = 128;
-        pcanvas.height = 128;
+        pcanvas.width = 32;
+        pcanvas.height = 32;
         const canvas = document.getElementById('canvas');
         const pctx = pcanvas.getContext('2d', { willReadFrequently: true });
         const dctx = canvas.getContext('2d');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
+        const increBtn = document.getElementById('increasePx');
+        const decreBtn = document.getElementById('decreasePx');
+        const inputPx = document.getElementById('inputPx');
+        const pxController = document.getElementById('pxController');
         var stream;
         var isStreaming = false;
         const downloadBtn = document.getElementById('downloadBtn');
@@ -88,17 +191,21 @@
         startBtn.onclick = async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user", width:640, height:640 },
+                    video: { facingMode: "user", width: 640, height: 640 },
                     audio: false
                 });
                 video.srcObject = stream;
-                startBtn.style.display = 'none';
-                stopBtn.style.display='';
                 isStreaming = true;
-                downloadBtn.style.display= '';
+
+                startBtn.style.display = 'none';
+                stopBtn.style.display = '';
+                downloadBtn.style.display = '';
+                increBtn.style.display = '';
+                decreBtn.style.display = '';
+                inputPx.style.display = '';
 
                 video.onloadedmetadata = () => {
-                    console.log("影片尺寸已獲取:", video.videoWidth, video.videoHeight);
+                    console.log("get video size:", video.videoWidth, video.videoHeight);
 
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
@@ -108,14 +215,14 @@
                     requestAnimationFrame(draw);
                 };
                 dctx.imageSmoothingEnabled = false;
-                
+
             } catch (err) {
                 alert("無法開啟相機: " + err);
             }
         };
 
-        stopBtn.onclick = async() => {
-            try{
+        stopBtn.onclick = async () => {
+            try {
                 isStreaming = false;
                 const tracks = stream.getTracks();
                 tracks.forEach(track => track.stop());
@@ -123,22 +230,54 @@
                 pctx.clearRect(0, 0, pcanvas.height, pcanvas.width);
                 dctx.clearRect(0, 0, canvas.height, canvas.width);
                 startBtn.style.display = '';
-                downloadBtn.style.display= "none";
+                downloadBtn.style.display = "none";
                 stopBtn.style.display = 'none';
-            } catch (err){
+                increBtn.style.display = 'none';
+                decreBtn.style.display = 'none';
+                inputPx.style.display = 'none';
+                exceed.style.display = "none";
+            } catch (err) {
                 alert("cannot stop the camera" + err);
             }
         }
 
-        downloadBtn.onclick = async() => {
+        downloadBtn.onclick = async () => {
             // download the image
             const imgURL = canvas.toDataURL("image/jpeg");
             saveImg(imgURL);
             alert(`The downloaded image is: ${imgURL}`);
         }
+
+        increBtn.onclick = async () => {
+            let getCanvasVal = Number(inputPx.value);
+            if (getCanvasVal < 128) {
+                getCanvasVal += 32;
+                inputPx.value = getCanvasVal;
+                exceed.style.display = "none";
+
+            }
+            else {
+                exceed.style.display = '';
+            }
+        }
+
+        decreBtn.onclick = async () => {
+            let getCanvasVal = Number(inputPx.value);
+            if (getCanvasVal <= 32) {
+                exceed.style.display = '';
+            }
+            else {
+                getCanvasVal -= 32;
+                inputPx.value = getCanvasVal;
+                exceed.style.display = "none";
+            }
+        }
+
         function draw() {
-            if(isStreaming == false) return;
+            if (isStreaming == false) return;
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                pcanvas.height = Number(inputPx.value);
+                pcanvas.width = Number(inputPx.value);
                 pctx.drawImage(video, 0, 0, pcanvas.height, pcanvas.width);
 
                 let imageData = pctx.getImageData(0, 0, pcanvas.height, pcanvas.width);
@@ -146,28 +285,42 @@
 
                 for (let i = 0; i < data.length; i += 4) {
                     let r = data[i];
-                    let g = data[i+1];
-                    let b = data[i+2];
-                    if(r >= b && r >= g){
-                        r = Math.min(r*1.2, 180);
-                        g = Math.max(g*0.4, 0);
-                        b = Math.max(b*0.6, 20);
-                    }else if(g >= r && g >= b){
-                        r = Math.max(r*0.6, 50);
-                        g = Math.min(g*0.8, 180);
-                        b = Math.max(b*0.6, 20);
-                    }else if(b >= r && b >= g){
-                        r = Math.max(r*0.4, 0);
-                        g = Math.max(g*0.4, 0);
-                        b = Math.min(b*1.2, 180);
-                    }else{
-                        r = Math.min(r*1.2, 180);
-                        g = Math.min(g*0.8, 180);
-                        b = Math.min(b*1.2, 180);
-                    }
+                    let g = data[i + 1];
+                    let b = data[i + 2];
+
+                    
+
                     data[i] = r;
-                    data[i+1] = g;
-                    data[i+2] = b;
+                    data[i+1] = 158;
+                    data[i+2] = 255;
+
+                    // data[i] = 235;
+                    // data[i+1] = g;
+                    // data[i+2] = 217;
+
+                    // data[i] = 161;
+                    // data[i+1] = 19;
+                    // data[i+2] = b;
+                    // if(r >= b && r >= g){
+                    //     r = Math.min(r*1.2, 180);
+                    //     g = Math.max(g*0.4, 0);
+                    //     b = Math.max(b*0.6, 20);
+                    // }else if(g >= r && g >= b){
+                    //     r = Math.max(r*0.6, 50);
+                    //     g = Math.min(g*0.8, 180);
+                    //     b = Math.max(b*0.6, 20);
+                    // }else if(b >= r && b >= g){
+                    //     r = Math.max(r*0.4, 0);
+                    //     g = Math.max(g*0.4, 0);
+                    //     b = Math.min(b*1.2, 180);
+                    // }else{
+                    //     r = Math.min(r*1.2, 180);
+                    //     g = Math.min(g*0.8, 180);
+                    //     b = Math.min(b*1.2, 180);
+                    // }
+                    // data[i] = r;
+                    // data[i+1] = g;
+                    // data[i+2] = b;
                 }
 
                 pctx.putImageData(imageData, 0, 0);
@@ -177,7 +330,7 @@
             requestAnimationFrame(draw);
         }
 
-        function saveImg(imgURL){
+        function saveImg(imgURL) {
             const downloadImg = document.getElementById('getImgURL');
             downloadImg.href = imgURL;
             const current_time = Date.now();
