@@ -65,7 +65,7 @@
 
     <div class="controls">
         <button id="startBtn">start</button>
-        <button id="stopBtn">||</button>
+        <button id="stopBtn" style="display:none">||</button>
         <button id="downloadBtn" style="display:none">download</button>
         <a id="getImgURL" style="display:none" href=""></a>
     </div>
@@ -79,6 +79,7 @@
         const pctx = pcanvas.getContext('2d', { willReadFrequently: true });
         const dctx = canvas.getContext('2d');
         const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
         var stream;
         var isStreaming = false;
         const downloadBtn = document.getElementById('downloadBtn');
@@ -92,6 +93,7 @@
                 });
                 video.srcObject = stream;
                 startBtn.style.display = 'none';
+                stopBtn.style.display='';
                 isStreaming = true;
                 downloadBtn.style.display= '';
 
@@ -122,6 +124,7 @@
                 dctx.clearRect(0, 0, canvas.height, canvas.width);
                 startBtn.style.display = '';
                 downloadBtn.style.display= "none";
+                stopBtn.style.display = 'none';
             } catch (err){
                 alert("cannot stop the camera" + err);
             }
