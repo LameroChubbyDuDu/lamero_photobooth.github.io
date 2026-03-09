@@ -297,33 +297,40 @@
                     // data[i+1] = 158;
                     // data[i+2] = 255;
 
-                    data[i] = r;
-                    data[i+1] = g;
-                    data[i+2] = b;
+                    // data[i] = r;
+                    // data[i+1] = g;
+                    // data[i+2] = b;
 
                     // data[i] = 161;
                     // data[i+1] = 19;
                     // data[i+2] = b;
-                    // if(r >= b && r >= g){
-                    //     r = Math.min(r*1.2, 180);
-                    //     g = Math.max(g*0.4, 0);
-                    //     b = Math.max(b*0.6, 20);
-                    // }else if(g >= r && g >= b){
-                    //     r = Math.max(r*0.6, 50);
-                    //     g = Math.min(g*0.8, 180);
-                    //     b = Math.max(b*0.6, 20);
-                    // }else if(b >= r && b >= g){
-                    //     r = Math.max(r*0.4, 0);
-                    //     g = Math.max(g*0.4, 0);
-                    //     b = Math.min(b*1.2, 180);
-                    // }else{
-                    //     r = Math.min(r*1.2, 180);
-                    //     g = Math.min(g*0.8, 180);
-                    //     b = Math.min(b*1.2, 180);
-                    // }
-                    // data[i] = r;
-                    // data[i+1] = g;
-                    // data[i+2] = b;
+                    if(r >= b && r >= g){
+                        g = r;
+                        b = r;
+                        // r = Math.min(r*1.2, 180);
+                        // g = Math.max(g*0.4, 0);
+                        // b = Math.max(b*0.6, 20);
+                    }else if(g >= r && g >= b){
+                        r = g;
+                        b = g;
+                        // r = Math.max(r*0.6, 50);
+                        // g = Math.min(g*0.8, 180);
+                        // b = Math.max(b*0.6, 20);
+                    }else if(b >= r && b >= g){
+                        r = b;
+                        g = b;
+                        // r = Math.max(r*0.4, 0);
+                        // g = Math.max(g*0.4, 0);
+                        // b = Math.min(b*1.2, 180);
+                    }else{
+                        
+                        // r = Math.min(r*1.2, 180);
+                        // g = Math.min(g*0.8, 180);
+                        // b = Math.min(b*1.2, 180);
+                    }
+                    data[i] = r;
+                    data[i+1] = g;
+                    data[i+2] = b;
                 }
 
                 pctx.putImageData(imageData, 0, 0);
