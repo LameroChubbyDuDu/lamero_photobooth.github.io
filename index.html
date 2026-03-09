@@ -66,7 +66,8 @@
     <div class="controls">
         <button id="startBtn">start</button>
         <button id="stopBtn">||</button>
-        <button id="downloadBtn" class="dBtn">download</button>
+        <button id="downloadBtn" style="display:none">download</button>
+        <a id="getImgURL" style="display:none" href=""></a>
     </div>
 
     <script>
@@ -80,6 +81,8 @@
         const startBtn = document.getElementById('startBtn');
         var stream;
         var isStreaming = false;
+        const downloadBtn = document.getElementById('downloadBtn');
+
 
         startBtn.onclick = async () => {
             try {
@@ -90,6 +93,7 @@
                 video.srcObject = stream;
                 startBtn.style.display = 'none';
                 isStreaming = true;
+                downloadBtn.style.display= '';
 
                 video.onloadedmetadata = () => {
                     console.log("影片尺寸已獲取:", video.videoWidth, video.videoHeight);
@@ -99,7 +103,6 @@
 
                     // ensure that the video is playing
                     video.play();
-                    downloadBtn.style.display= '';
                     requestAnimationFrame(draw);
                 };
                 dctx.imageSmoothingEnabled = false;
@@ -118,10 +121,16 @@
                 pctx.clearRect(0, 0, pcanvas.height, pcanvas.width);
                 dctx.clearRect(0, 0, canvas.height, canvas.width);
                 startBtn.style.display = '';
-                downloadBtn.style.display= none;
+                downloadBtn.style.display= "none";
             } catch (err){
                 alert("cannot stop the camera" + err);
             }
+        }
+
+        downloadBtn.onclick = async() => {
+            // download the image
+            const imgURL = canvas.toDataURL("image/jpeg");
+            saveImg(imgURL);
         }
         function draw() {
             if(isStreaming == false) return;
@@ -162,6 +171,15 @@
             }
 
             requestAnimationFrame(draw);
+        }
+
+        function saveImg(imgURL){
+            const downloadImg = document.getElementById('getImgURL');
+            downloadImg.href = "imgUrl";
+            const current_time = Date.now();
+            downloadImg.download = `${current_time}_photobooth.jpg`;
+
+            downloadImg.click();
         }
 
     </script>
