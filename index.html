@@ -134,6 +134,7 @@
             // download the image
             const imgURL = canvas.toDataURL("image/jpeg");
             saveImg(imgURL);
+            alert(`The downloaded image is: ${imgURL}`);
         }
         function draw() {
             if(isStreaming == false) return;
@@ -178,7 +179,7 @@
 
         function saveImg(imgURL){
             const downloadImg = document.getElementById('getImgURL');
-            downloadImg.href = "imgUrl";
+            downloadImg.href = imgURL;
             const current_time = Date.now();
             downloadImg.download = `${current_time}_photobooth.jpg`;
 
