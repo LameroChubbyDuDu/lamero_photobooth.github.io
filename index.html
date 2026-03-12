@@ -2,6 +2,7 @@
 <html lang="zh-TW">
 
 <head>
+    <link href="animation.css" rel="stylesheet" type="text/css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>lamero_photobooth</title>
@@ -32,6 +33,10 @@
             background-repeat: none;
             background-position: center;
             background-size: contain;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            /* Firefox */
+            image-rendering: crisp-edges;
         }
 
         @media(min-width: 1200px) {
@@ -40,6 +45,15 @@
                 height: 30vw;
             }
         }
+
+        /* .loading{
+            height: 600px;
+            width:600px;
+            border-radius: 300px;
+            background-color:#381705;
+            animation: loadingAnimation 3s infinite alternate;
+            display: none;
+        } */
 
 
         .controls {
@@ -64,7 +78,8 @@
             position: relative;
             padding: 8px;
             margin: 10px auto;
-            transform: none; /*往左移動自身長度的一半*/
+            transform: none;
+            /*往左移動自身長度的一半*/
             font-family: "Vast Shadow", serif;
         }
 
@@ -103,7 +118,7 @@
             
         } */
 
-        .incre{
+        .incre {
             display: block;
             font-size: 20px;
             background-color: #ffffff;
@@ -154,6 +169,9 @@
 
     <canvas id="canvas"></canvas>
 
+    <!-- <div id="loading" class="loading" style="display: none;"> -->
+
+    </div>
     <div class="controls">
         <button id="startBtn">start</button>
         <p id="exceed" style="display:none">The number should range from 32 to 128</p>
@@ -184,6 +202,7 @@
         const decreBtn = document.getElementById('decreasePx');
         const inputPx = document.getElementById('inputPx');
         const pxController = document.getElementById('pxController');
+        const loading = document.getElementById('loading');
         var stream;
         var isStreaming = false;
         const downloadBtn = document.getElementById('downloadBtn');
@@ -251,7 +270,7 @@
 
         increBtn.onclick = async () => {
             let getCanvasVal = Number(inputPx.value);
-            
+
             if (getCanvasVal < 128) {
                 getCanvasVal += 32;
                 inputPx.value = getCanvasVal;
@@ -265,7 +284,7 @@
 
         decreBtn.onclick = async () => {
             let getCanvasVal = Number(inputPx.value);
-            
+
             if (getCanvasVal <= 32) {
                 exceed.style.display = '';
             }
@@ -275,6 +294,15 @@
                 exceed.style.display = "none";
             }
         }
+
+
+
+        // window.addEventListener("load", function(event){
+        //     loading.style.display='';
+
+        // })
+
+
 
         function draw() {
             if (isStreaming == false) return;
@@ -291,7 +319,7 @@
                     let g = data[i + 1];
                     let b = data[i + 2];
 
-                    
+
 
                     // data[i] = r;
                     // data[i+1] = 158;
@@ -307,33 +335,57 @@
                     if(r >= b && r >= g){
                         g = r;
                         b = r;
-                        // r = Math.min(r*1.2, 180);
-                        // g = Math.max(g*0.4, 0);
-                        // b = Math.max(b*0.6, 20);
                     }else if(g >= r && g >= b){
                         r = g;
                         b = g;
-                        // r = Math.max(r*0.6, 50);
-                        // g = Math.min(g*0.8, 180);
-                        // b = Math.max(b*0.6, 20);
                     }else if(b >= r && b >= g){
                         r = b;
                         g = b;
-                        // r = Math.max(r*0.4, 0);
-                        // g = Math.max(g*0.4, 0);
-                        // b = Math.min(b*1.2, 180);
                     }else{
-                        
-                        // r = Math.min(r*1.2, 180);
-                        // g = Math.min(g*0.8, 180);
-                        // b = Math.min(b*1.2, 180);
                     }
+
+                    // if(r >= b && r >= g){
+                    //     if(r >= 200) r = 255;
+                    //     else if(r<200 && r>=150) r = 180;
+                    //     else if(r<150 && r>=100) r = 100;
+                    //     else r = 60;
+                    //     g = 184;
+                    //     b = 205;
+                    // }else if(g >= r && g >= b){
+                    //     if(g >= 200) g = 140;
+                    //     else if(g<200 && g>=150) g = 100;
+                    //     else if(g<150 && g>=100) g = 80;
+                    //     else g = 0;
+                    //     r = 183;
+                    //     b = 142;
+                    // }else if(b >= r && b >= g){
+                    //     if(b >= 200) b = 140;
+                    //     else if(b<200 && b>=150) b = 100;
+                    //     else if(b<150 && b>=100) b = 80;
+                    //     else b = 50;
+                    //     r = 183;
+                    //     g = 142;
+                    // }else{
+                    //     r = 103;
+                    //     g = 30;
+                    //     b = 22;
+                    // }
+                    // r = colorAddress(r);
+                    // g = colorAddress(g);
+                    // b = colorAddress(b);
+
+
                     data[i] = r;
-                    data[i+1] = g;
-                    data[i+2] = b;
+                    data[i + 1] = g;
+                    data[i + 2] = b;
+                    data[i + 3] = 255;
                 }
 
                 pctx.putImageData(imageData, 0, 0);
+                dctx.imageSmoothingEnabled = false;
+                dctx.webkitImageSmoothingEnabled = false;
+                dctx.mozImageSmoothingEnabled = false;
+                dctx.msImageSmoothingEnabled = false;
                 dctx.drawImage(pcanvas, 0, 0, canvas.height, canvas.width);
             }
 
@@ -349,7 +401,17 @@
             downloadImg.click();
         }
 
+        function colorAddress(color) {
+            color = (color / 100) * 100 + 15;
+            if (color >= 200) color = 200;
+            else if (color < 200 && color >= 150) color = 160;
+            else if (color < 150 && color >= 50) color = 100;
+            else color = 80;
+            return color;
+        }
+
     </script>
+    <!-- <script type="text/javascript" src="animation.js"></script> -->
 </body>
 
 </html>
